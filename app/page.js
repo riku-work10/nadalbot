@@ -1,103 +1,141 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { motion } from "framer-motion";
+
+// ✅ ナダル風アバター（フリー素材 or ナダル本人画像に差し替え可）
+const botAvatarUrl = "https://bandresume.s3.ap-northeast-1.amazonaws.com/profile_images/jimeng-2025-06-20-892-%E7%9B%AE%E5%85%83%E4%BB%A5%E5%A4%96%E3%82%82%E3%82%A4%E3%83%A9%E3%82%B9%E3%83%88%E9%A2%A8%E3%81%AB%E3%81%97%E3%81%A6%E3%81%BB%E3%81%97%E3%81%84.jpeg"; // 仮アイコン：坊主の男性風（差し替えOK）
+
+function App() {
+  const [input, setInput] = useState("");
+  const [isDrunkMode, setIsDrunkMode] = useState(false);
+
+  const nadalIntro = {
+    role: "assistant",
+    content: `
+ナダルやけどぉ〜〜！？呼んだん、君！？  
+やっべぇぞ！！クセ強トーク、始めよか！！
+
+【使い方】  
+なんでも聞いてくれてええで。答えるかどうかは…ワイの気分やけどな〜〜？笑
+「これ、進化させて〜！」って言われたら、
+ナダルが独自の“ナダル・リバース・エボリューション”理論で言葉を進化 or 逆進化させて返したる！
+進化してるか退化してるかは気にすんな！感じろ！
+
+⚠️【注意】  
+・急にキレることあるで？愛やけどな！  
+・嘘もつくかも。やっべぇぞ！  
+・おもんない質問、スルーするぞ！お前誰やねん！
+
+さぁ、トーク開始や！！
+    `.trim(),
+  };
+
+  const [messages, setMessages] = useState([nadalIntro]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMsg = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+
+    try {
+      const res = await fetch("/api/nadal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input, isDrunk: isDrunkMode }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "API Error");
+      }
+
+      const data = await res.json();
+      const botMsg = { role: "assistant", content: data.text };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (error) {
+      const errorMsg = {
+        role: "assistant",
+        content: `ナダルやけど、なんかエラー出たわ！やっべぇぞ！→ ${error.message}`,
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-purple-950 text-white p-6 flex flex-col items-center font-sans">
+  <h1 className="text-3xl font-extrabold mb-4 text-fuchsia-400 tracking-wider drop-shadow-sm">
+    今日も一日やっべぇぞ！
+  </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy noww
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  <div className="w-full max-w-xl bg-purple-900/80 backdrop-blur-md shadow-inner rounded-3xl p-4 space-y-4 overflow-y-auto h-[450px] border border-fuchsia-800">
+    {messages.map((msg, index) => (
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className={`flex items-end ${
+          msg.role === "user" ? "justify-end" : "justify-start"
+        }`}
+      >
+        {msg.role === "assistant" && (
+          <img
+            src={botAvatarUrl}
+            alt="NadalBot"
+            className="w-10 h-10 rounded-full mr-2 border border-purple-500 shadow"
+          />
+        )}
+        <div
+          className={`px-4 py-3 max-w-xs rounded-2xl text-sm shadow-md ${
+            msg.role === "user"
+              ? "bg-fuchsia-600 text-white rounded-br-none"
+              : "bg-violet-300 text-purple-900 rounded-bl-none"
+          }`}
+        >
+          {msg.content}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </motion.div>
+    ))}
+  </div>
+
+  <div className="w-full max-w-xl mt-6 flex flex-col items-center">
+    <div className="flex w-full">
+      <input
+        className="flex-1 px-4 py-3 rounded-l-2xl border border-fuchsia-400 bg-purple-100/80 text-purple-900 placeholder:text-purple-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-400"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+          }
+        }}
+        placeholder="ナダルに話しかけてみ？"
+      />
+      <button
+        className="bg-fuchsia-700 hover:bg-fuchsia-800 text-white px-6 py-3 rounded-r-2xl transition-all duration-300 shadow-md"
+        onClick={handleSend}
+      >
+      送信や！
+      </button>
     </div>
+
+    <button
+      className={`mt-4 px-6 py-2 rounded-full font-bold transition-all duration-300 shadow ${
+        isDrunkMode
+          ? "bg-pink-500 hover:bg-pink-600 text-white"
+          : "bg-pink-200 hover:bg-pink-300 text-pink-800"
+      }`}
+      onClick={() => setIsDrunkMode(!isDrunkMode)}
+    >
+      {isDrunkMode ? "普通のナダルと話す" : "ナダル・リバース・エボリューション"}
+    </button>
+  </div>
+</div>
   );
 }
+
+export default App;
