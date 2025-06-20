@@ -9,6 +9,8 @@ const botAvatarUrl = "https://bandresume.s3.ap-northeast-1.amazonaws.com/profile
 function App() {
   const [input, setInput] = useState("");
   const [isDrunkMode, setIsDrunkMode] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
+
 
   const nadalIntro = {
     role: "assistant",
@@ -107,8 +109,10 @@ function App() {
         className="flex-1 px-4 py-3 rounded-l-2xl border border-fuchsia-400 bg-purple-100/80 text-purple-900 placeholder:text-purple-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-400"
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
+          if (e.key === "Enter" && !e.shiftKey && !isComposing) {
             e.preventDefault();
             handleSend();
           }
