@@ -8,7 +8,7 @@ const botAvatarUrl = "https://bandresume.s3.ap-northeast-1.amazonaws.com/profile
 
 function App() {
   const [input, setInput] = useState("");
-  const [isDrunkMode, setIsDrunkMode] = useState(false);
+  const [isNadal, setIsNadal] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
 
 
@@ -46,7 +46,7 @@ function App() {
       const res = await fetch("/api/nadal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input, isDrunk: isDrunkMode }),
+        body: JSON.stringify({ message: input, isDrunk: isNadal }),
       });
 
       if (!res.ok) {
@@ -129,13 +129,13 @@ function App() {
 
     <button
       className={`mt-4 px-6 py-2 rounded-full font-bold transition-all duration-300 shadow ${
-        isDrunkMode
+        isNadal
           ? "bg-pink-500 hover:bg-pink-600 text-white"
           : "bg-pink-200 hover:bg-pink-300 text-pink-800"
       }`}
-      onClick={() => setIsDrunkMode(!isDrunkMode)}
+      onClick={() => setIsNadal(!isNadal)}
     >
-      {isDrunkMode ? "普通のナダルと話す" : "ナダル・リバース・エボリューション"}
+      {isNadal ? "普通のナダルと話す" : "ナダル・リバース・エボリューション"}
     </button>
   </div>
 </div>
